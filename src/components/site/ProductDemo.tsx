@@ -466,6 +466,42 @@ export function ProductDemo() {
           </div>
 
           <div className="space-y-8">
+            {/* Mode switcher */}
+            <div
+              className="inline-flex w-full sm:w-auto rounded-full border border-border bg-card p-1 gap-1"
+              role="tablist"
+              aria-label="Demo mode"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "samples"}
+                onClick={() => setMode("samples")}
+                className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-xs font-semibold transition ${
+                  mode === "samples"
+                    ? "bg-primary text-primary-foreground shadow-soft"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <FlaskConical size={13} /> Sample isolates
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "upload"}
+                onClick={() => setMode("upload")}
+                className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-xs font-semibold transition ${
+                  mode === "upload"
+                    ? "bg-primary text-primary-foreground shadow-soft"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <FileUp size={13} /> Upload your own genome
+              </button>
+            </div>
+
+            {mode === "samples" ? (
+              <>
             {/* Step 1 — Sample selection */}
             <div id="sample-selection">
               <div className="flex items-center gap-3">
