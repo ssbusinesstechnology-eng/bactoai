@@ -826,6 +826,10 @@ export function ProductDemo() {
                 )}
               </form>
             </div>
+              </>
+            ) : (
+              livePanel
+            )}
           </div>
         </div>
       </div>
