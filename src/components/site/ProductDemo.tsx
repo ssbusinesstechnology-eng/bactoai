@@ -166,7 +166,8 @@ export function ProductDemo() {
   };
 
   const livePanel = (
-PLACEHOLDER
+    <div className="relative">
+      <div className="absolute -inset-4 bg-primary opacity-10 blur-3xl rounded-3xl" />
       <div className="relative rounded-3xl border border-border bg-card shadow-elegant overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/40">
           <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
@@ -465,6 +466,42 @@ PLACEHOLDER
           </div>
 
           <div className="space-y-8">
+            {/* Mode switcher */}
+            <div
+              className="inline-flex w-full sm:w-auto rounded-full border border-border bg-card p-1 gap-1"
+              role="tablist"
+              aria-label="Demo mode"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "samples"}
+                onClick={() => setMode("samples")}
+                className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-xs font-semibold transition ${
+                  mode === "samples"
+                    ? "bg-primary text-primary-foreground shadow-soft"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <FlaskConical size={13} /> Sample isolates
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "upload"}
+                onClick={() => setMode("upload")}
+                className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-xs font-semibold transition ${
+                  mode === "upload"
+                    ? "bg-primary text-primary-foreground shadow-soft"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <FileUp size={13} /> Upload your own genome
+              </button>
+            </div>
+
+            {mode === "samples" ? (
+              <>
             {/* Step 1 — Sample selection */}
             <div id="sample-selection">
               <div className="flex items-center gap-3">
@@ -789,6 +826,10 @@ PLACEHOLDER
                 )}
               </form>
             </div>
+              </>
+            ) : (
+              livePanel
+            )}
           </div>
         </div>
       </div>
