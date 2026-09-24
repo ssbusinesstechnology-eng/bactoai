@@ -90,9 +90,6 @@ export async function parseGenome(file: File): Promise<SequenceStats> {
         if (headers.length) lengths.push(cur);
         cur = 0;
         if (headers.length < 8) headers.push(line.slice(1, 120));
-        else headers.length;
-        lengths.length; // noop
-        headersCount++;
       } else if (line) addSeq(line);
     }
     lengths.push(cur);
@@ -123,4 +120,3 @@ export async function parseGenome(file: File): Promise<SequenceStats> {
     excerpt,
   };
 }
-let headersCount = 0;
