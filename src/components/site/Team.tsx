@@ -1,7 +1,6 @@
 import samwelPhoto from "@/assets/samwel-elegwa.png.asset.json";
 import sheilaPhoto from "@/assets/sheila-okwisa.png.asset.json";
 import williamPhoto from "@/assets/william-otieno.jpg.asset.json";
-import carolynePhoto from "@/assets/carolyne-mboya.jpg.asset.json";
 import sylviaPhoto from "@/assets/sylvia-jane-nyambura.jpg.asset.json";
 
 type Member = {
@@ -49,15 +48,6 @@ const team: Member[] = [
     extended:
       "Connects the scientific, engineering, and partnership functions to ensure that projects move efficiently from development to real-world implementation.",
     focus: ["Operations", "Pilot coordination", "Project execution"],
-  },
-  {
-    name: "Carolyne Mboya",
-    role: "Business Partnerships Lead",
-    photo: carolynePhoto.url,
-    bio: "Leads BactoAI's business development and strategic partnerships, building relationships with hospitals, research institutions, universities, funders, and other stakeholders.",
-    extended:
-      "Focused on translating BactoAI's technical capabilities into deployment opportunities and sustainable collaborations across East Africa.",
-    focus: ["Business development", "Strategic partnerships", "East Africa deployment"],
   },
 ];
 

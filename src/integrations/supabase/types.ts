@@ -80,6 +80,57 @@ export type Database = {
         }
         Relationships: []
       }
+      genome_analyses: {
+        Row: {
+          clinical_notes: string | null
+          collection_date: string | null
+          created_at: string
+          file_name: string
+          file_size_bytes: number
+          id: string
+          isolate_label: string
+          location: string | null
+          organism: string
+          overall_risk: string
+          sequence_stats: Json
+          specimen_source: string
+          summary: Json
+          user_id: string
+        }
+        Insert: {
+          clinical_notes?: string | null
+          collection_date?: string | null
+          created_at?: string
+          file_name: string
+          file_size_bytes: number
+          id?: string
+          isolate_label: string
+          location?: string | null
+          organism: string
+          overall_risk: string
+          sequence_stats: Json
+          specimen_source: string
+          summary: Json
+          user_id: string
+        }
+        Update: {
+          clinical_notes?: string | null
+          collection_date?: string | null
+          created_at?: string
+          file_name?: string
+          file_size_bytes?: number
+          id?: string
+          isolate_label?: string
+          location?: string | null
+          organism?: string
+          overall_risk?: string
+          sequence_stats?: Json
+          specimen_source?: string
+          summary?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
