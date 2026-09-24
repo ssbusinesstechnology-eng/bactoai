@@ -166,7 +166,8 @@ export function ProductDemo() {
   };
 
   const livePanel = (
-PLACEHOLDER
+    <div className="relative">
+      <div className="absolute -inset-4 bg-primary opacity-10 blur-3xl rounded-3xl" />
       <div className="relative rounded-3xl border border-border bg-card shadow-elegant overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/40">
           <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
