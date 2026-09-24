@@ -117,6 +117,7 @@ export function ProductDemo() {
 
   const [reqStatus, setReqStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [req, setReq] = useState({ name: "", email: "", organization: "", message: "" });
+  const [mode, setMode] = useState<"samples" | "upload">("samples");
 
 
   async function submitRequest(e: React.FormEvent) {
