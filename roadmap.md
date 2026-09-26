@@ -9,3 +9,4 @@
 - [x] AI risk summary from genome + metadata
 - [x] Client-side validation in upload panel
 - [x] Prediction history page with filters + download
+- [x] Optimize cinematic DNA and below-fold rendering for mobile performance
