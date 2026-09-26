@@ -74,8 +74,9 @@ export function Contact() {
               className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4"
             >
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">Full name</label>
+                <label htmlFor="contact-name" className="text-xs font-semibold text-muted-foreground">Full name</label>
                 <input
+                  id="contact-name"
                   required
                   maxLength={100}
                   value={form.name}
@@ -85,8 +86,9 @@ export function Contact() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">Work email</label>
+                <label htmlFor="contact-email" className="text-xs font-semibold text-muted-foreground">Work email</label>
                 <input
+                  id="contact-email"
                   type="email"
                   required
                   maxLength={255}
@@ -97,8 +99,9 @@ export function Contact() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">Organization</label>
+                <label htmlFor="contact-org" className="text-xs font-semibold text-muted-foreground">Organization</label>
                 <input
+                  id="contact-org"
                   maxLength={150}
                   value={form.organization}
                   onChange={(e) => setForm({ ...form, organization: e.target.value })}
@@ -107,10 +110,11 @@ export function Contact() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label htmlFor="contact-message" className="text-xs font-semibold text-muted-foreground">
                   How can we help?
                 </label>
                 <textarea
+                  id="contact-message"
                   rows={4}
                   maxLength={1000}
                   value={form.message}
