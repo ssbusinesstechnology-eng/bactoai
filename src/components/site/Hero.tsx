@@ -10,21 +10,26 @@ function HelixCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     let raf = 0;
+    let isVisible = true;
+    let lastFrame = 0;
     let w = 0,
       h = 0;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let isMobile = window.matchMedia("(max-width: 767px)").matches;
+    let dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.75);
 
     const resize = () => {
+      isMobile = window.matchMedia("(max-width: 767px)").matches;
+      dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.75);
       w = canvas.clientWidth;
       h = canvas.clientHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     window.addEventListener("resize", resize);
 
-    const particles = Array.from({ length: 72 }).map(() => ({
+    const particles = Array.from({ length: isMobile ? 28 : 64 }).map(() => ({
       x: Math.random() * w,
       y: Math.random() * h,
       r: Math.random() * 1.5 + 0.25,
@@ -34,8 +39,18 @@ function HelixCanvas() {
     }));
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const targetFrameMs = isMobile ? 1000 / 30 : 1000 / 45;
 
     const draw = (t: number) => {
+      if (!isVisible || document.hidden) {
+        raf = requestAnimationFrame(draw);
+        return;
+      }
+      if (!reduced && t - lastFrame < targetFrameMs) {
+        raf = requestAnimationFrame(draw);
+        return;
+      }
+      lastFrame = t;
       ctx.clearRect(0, 0, w, h);
 
       const time = reduced ? 0.7 : t * 0.00042;
@@ -81,8 +96,9 @@ function HelixCanvas() {
       };
 
       // Base-pair bridges are ordered back-to-front, creating real occlusion cues.
-      const rungs = Array.from({ length: 36 }, (_, i) => {
-        const progress = (i + 0.5) / 36;
+      const rungCount = isMobile ? 22 : 34;
+      const rungs = Array.from({ length: rungCount }, (_, i) => {
+        const progress = (i + 0.5) / rungCount;
         const a = pointAt(progress);
         const b = pointAt(progress, true);
         return { a, b, progress, depth: Math.max(a.z, b.z) };
@@ -90,11 +106,15 @@ function HelixCanvas() {
 
       for (const { a, b, depth } of rungs) {
         const alpha = 0.1 + ((depth + 1) / 2) * 0.28;
-        const bridge = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-        bridge.addColorStop(0, `rgba(23, 185, 143, ${alpha})`);
-        bridge.addColorStop(0.5, `rgba(194, 244, 229, ${alpha * 0.72})`);
-        bridge.addColorStop(1, `rgba(56, 189, 248, ${alpha * 0.8})`);
-        ctx.strokeStyle = bridge;
+        if (isMobile) {
+          ctx.strokeStyle = `rgba(111, 217, 190, ${alpha * 0.82})`;
+        } else {
+          const bridge = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+          bridge.addColorStop(0, `rgba(23, 185, 143, ${alpha})`);
+          bridge.addColorStop(0.5, `rgba(194, 244, 229, ${alpha * 0.72})`);
+          bridge.addColorStop(1, `rgba(56, 189, 248, ${alpha * 0.8})`);
+          ctx.strokeStyle = bridge;
+        }
         ctx.lineWidth = 0.7 + ((depth + 1) / 2) * 1.15;
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
@@ -103,7 +123,7 @@ function HelixCanvas() {
       }
 
       // Draw each backbone in short depth-aware sections so the front edge glows.
-      const segments = 150;
+      const segments = isMobile ? 72 : 132;
       const strandSections: Array<{ a: HelixPoint; b: HelixPoint; strand: number }> = [];
       for (let strand = 0; strand < 2; strand++) {
         for (let i = 0; i < segments; i++) {
@@ -125,7 +145,7 @@ function HelixCanvas() {
           : `rgba(105, 210, 236, ${alpha * 0.86})`;
         ctx.lineWidth = 1.2 + depth * 3.4;
         ctx.lineCap = "round";
-        ctx.shadowBlur = depth > 0.62 ? 15 * depth : 0;
+        ctx.shadowBlur = depth > 0.68 ? (isMobile ? 7 : 13) * depth : 0;
         ctx.shadowColor = section.strand === 0
           ? "rgba(23, 185, 143, 0.72)"
           : "rgba(56, 189, 248, 0.58)";
@@ -142,20 +162,24 @@ function HelixCanvas() {
           const depth = (node.z + 1) / 2;
           const nodeRadius = 1.5 + depth * 3.4;
           ctx.save();
-          ctx.shadowBlur = 7 + depth * 15;
+          ctx.shadowBlur = isMobile ? 3 + depth * 7 : 6 + depth * 13;
           ctx.shadowColor = `rgba(${color}, ${0.35 + depth * 0.5})`;
-          const orb = ctx.createRadialGradient(
-            node.x - nodeRadius * 0.28,
-            node.y - nodeRadius * 0.28,
-            0,
-            node.x,
-            node.y,
-            nodeRadius,
-          );
-          orb.addColorStop(0, `rgba(245, 247, 246, ${0.7 + depth * 0.3})`);
-          orb.addColorStop(0.35, `rgba(${color}, ${0.52 + depth * 0.45})`);
-          orb.addColorStop(1, `rgba(${color}, ${0.08 + depth * 0.22})`);
-          ctx.fillStyle = orb;
+          if (isMobile) {
+            ctx.fillStyle = `rgba(${color}, ${0.55 + depth * 0.4})`;
+          } else {
+            const orb = ctx.createRadialGradient(
+              node.x - nodeRadius * 0.28,
+              node.y - nodeRadius * 0.28,
+              0,
+              node.x,
+              node.y,
+              nodeRadius,
+            );
+            orb.addColorStop(0, `rgba(245, 247, 246, ${0.7 + depth * 0.3})`);
+            orb.addColorStop(0.35, `rgba(${color}, ${0.52 + depth * 0.45})`);
+            orb.addColorStop(1, `rgba(${color}, ${0.08 + depth * 0.22})`);
+            ctx.fillStyle = orb;
+          }
           ctx.beginPath();
           ctx.arc(node.x, node.y, nodeRadius, 0, Math.PI * 2);
           ctx.fill();
@@ -165,10 +189,15 @@ function HelixCanvas() {
 
       if (!reduced) raf = requestAnimationFrame(draw);
     };
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      isVisible = entry?.isIntersecting ?? true;
+    }, { rootMargin: "100px" });
+    visibilityObserver.observe(canvas);
     if (reduced) draw(0);
     else raf = requestAnimationFrame(draw);
     return () => {
       cancelAnimationFrame(raf);
+      visibilityObserver.disconnect();
       window.removeEventListener("resize", resize);
     };
   }, []);
@@ -245,7 +274,7 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="relative h-[420px] lg:h-[520px]">
+        <div className="relative h-[360px] sm:h-[420px] lg:h-[520px]">
           {stats.map((s, i) => (
             <div
               key={s.k}

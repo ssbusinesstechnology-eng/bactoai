@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep the hero DNA on adaptive Canvas 2D with reduced mobile detail and paused off-screen rendering; this preserves its cinematic depth without a heavy 3D dependency.
