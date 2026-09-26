@@ -124,6 +124,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@400&display=swap",
       },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            { "@type": "Organization", name: "BactoAI", url: "https://bactoai.lovable.app", logo: "https://bactoai.lovable.app/favicon.png", email: "bactoai01@gmail.com" },
+            { "@type": "WebSite", name: "BactoAI", url: "https://bactoai.lovable.app" },
+          ],
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
