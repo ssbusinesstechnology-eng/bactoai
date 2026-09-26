@@ -278,7 +278,7 @@ export function Hero() {
           {stats.map((s, i) => (
             <div
               key={s.k}
-              className="glass-dark rounded-2xl p-5 absolute w-[240px] animate-float-slow"
+              className="glass-dark rounded-2xl p-5 absolute w-[220px] sm:w-[240px] animate-float-slow"
               style={{
                 top: `${[8, 42, 72][i]}%`,
                 left: `${[6, 42, 12][i]}%`,
