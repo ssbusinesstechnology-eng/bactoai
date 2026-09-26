@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ChevronDown, Play } from "lucide-react";
 
-/** Canvas-2D DNA helix + particle field. Lightweight, mobile-safe. */
+/** Cinematic Canvas-2D DNA helix with projected depth. Lightweight and mobile-safe. */
 function HelixCanvas() {
   const ref = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
@@ -24,13 +24,13 @@ function HelixCanvas() {
     resize();
     window.addEventListener("resize", resize);
 
-    const particles = Array.from({ length: 60 }).map(() => ({
+    const particles = Array.from({ length: 72 }).map(() => ({
       x: Math.random() * w,
       y: Math.random() * h,
-      r: Math.random() * 1.6 + 0.3,
-      vx: (Math.random() - 0.5) * 0.25,
-      vy: (Math.random() - 0.5) * 0.25,
-      a: Math.random() * 0.5 + 0.15,
+      r: Math.random() * 1.5 + 0.25,
+      vx: (Math.random() - 0.5) * 0.18,
+      vy: (Math.random() - 0.5) * 0.18,
+      depth: Math.random(),
     }));
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -38,53 +38,135 @@ function HelixCanvas() {
     const draw = (t: number) => {
       ctx.clearRect(0, 0, w, h);
 
-      // particles
+      const time = reduced ? 0.7 : t * 0.00042;
+      const cx = w < 760 ? w * 0.72 : w * 0.79;
+      const helixHeight = Math.min(h * 0.88, 680);
+      const top = (h - helixHeight) * 0.5;
+      const radius = Math.min(w < 760 ? w * 0.2 : w * 0.115, 148);
+      const turns = 3.25;
+
+      // A restrained pool of light gives the molecule volume without obscuring copy.
+      const atmosphere = ctx.createRadialGradient(cx, h * 0.47, 10, cx, h * 0.47, radius * 2.8);
+      atmosphere.addColorStop(0, "rgba(23, 185, 143, 0.105)");
+      atmosphere.addColorStop(0.48, "rgba(56, 189, 248, 0.035)");
+      atmosphere.addColorStop(1, "rgba(10, 15, 13, 0)");
+      ctx.fillStyle = atmosphere;
+      ctx.fillRect(Math.max(0, cx - radius * 3), top - 80, radius * 6, helixHeight + 160);
+
+      // Dust motes drift at different speeds to suggest depth.
       for (const p of particles) {
         if (!reduced) {
-          p.x += p.vx;
-          p.y += p.vy;
+          p.x += p.vx * (0.35 + p.depth);
+          p.y += p.vy * (0.35 + p.depth);
           if (p.x < 0 || p.x > w) p.vx *= -1;
           if (p.y < 0 || p.y > h) p.vy *= -1;
         }
         ctx.beginPath();
-        ctx.fillStyle = `rgba(159, 227, 206, ${p.a * 0.7})`;
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(159, 227, 206, ${0.05 + p.depth * 0.22})`;
+        ctx.arc(p.x, p.y, p.r * (0.45 + p.depth * 0.8), 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // helix on right
-      const cx = w * 0.78;
-      const amp = Math.min(140, w * 0.12);
-      const step = 18;
-      const time = reduced ? 0 : t * 0.0009;
-      for (let i = 0; i < 34; i++) {
-        const y = 40 + i * step;
-        if (y > h - 20) break;
-        const phase = i * 0.42 + time;
-        const x1 = cx + Math.sin(phase) * amp;
-        const x2 = cx - Math.sin(phase) * amp;
-        const alpha = 0.15 + 0.35 * (0.5 + 0.5 * Math.cos(phase));
+      type HelixPoint = { x: number; y: number; z: number; scale: number };
+      const pointAt = (progress: number, opposite = false): HelixPoint => {
+        const phase = progress * Math.PI * 2 * turns + time + (opposite ? Math.PI : 0);
+        const z = Math.sin(phase);
+        const perspective = 0.72 + (z + 1) * 0.18;
+        return {
+          x: cx + Math.cos(phase) * radius * perspective,
+          y: top + progress * helixHeight,
+          z,
+          scale: perspective,
+        };
+      };
 
-        ctx.strokeStyle = `rgba(23, 185, 143, ${alpha * 0.35})`;
-        ctx.lineWidth = 1;
+      // Base-pair bridges are ordered back-to-front, creating real occlusion cues.
+      const rungs = Array.from({ length: 36 }, (_, i) => {
+        const progress = (i + 0.5) / 36;
+        const a = pointAt(progress);
+        const b = pointAt(progress, true);
+        return { a, b, progress, depth: Math.max(a.z, b.z) };
+      }).sort((a, b) => a.depth - b.depth);
+
+      for (const { a, b, depth } of rungs) {
+        const alpha = 0.1 + ((depth + 1) / 2) * 0.28;
+        const bridge = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+        bridge.addColorStop(0, `rgba(23, 185, 143, ${alpha})`);
+        bridge.addColorStop(0.5, `rgba(194, 244, 229, ${alpha * 0.72})`);
+        bridge.addColorStop(1, `rgba(56, 189, 248, ${alpha * 0.8})`);
+        ctx.strokeStyle = bridge;
+        ctx.lineWidth = 0.7 + ((depth + 1) / 2) * 1.15;
         ctx.beginPath();
-        ctx.moveTo(x1, y);
-        ctx.lineTo(x2, y);
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
         ctx.stroke();
-
-        ctx.fillStyle = `rgba(23, 185, 143, ${alpha})`;
-        ctx.beginPath();
-        ctx.arc(x1, y, 2.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = `rgba(56, 189, 248, ${alpha * 0.45})`;
-        ctx.beginPath();
-        ctx.arc(x2, y, 2.4, 0, Math.PI * 2);
-        ctx.fill();
       }
 
-      raf = requestAnimationFrame(draw);
+      // Draw each backbone in short depth-aware sections so the front edge glows.
+      const segments = 150;
+      const strandSections: Array<{ a: HelixPoint; b: HelixPoint; strand: number }> = [];
+      for (let strand = 0; strand < 2; strand++) {
+        for (let i = 0; i < segments; i++) {
+          strandSections.push({
+            a: pointAt(i / segments, strand === 1),
+            b: pointAt((i + 1) / segments, strand === 1),
+            strand,
+          });
+        }
+      }
+      strandSections.sort((a, b) => (a.a.z + a.b.z) - (b.a.z + b.b.z));
+
+      for (const section of strandSections) {
+        const depth = (section.a.z + section.b.z) * 0.25 + 0.5;
+        const alpha = 0.16 + depth * 0.7;
+        ctx.save();
+        ctx.strokeStyle = section.strand === 0
+          ? `rgba(23, 185, 143, ${alpha})`
+          : `rgba(105, 210, 236, ${alpha * 0.86})`;
+        ctx.lineWidth = 1.2 + depth * 3.4;
+        ctx.lineCap = "round";
+        ctx.shadowBlur = depth > 0.62 ? 15 * depth : 0;
+        ctx.shadowColor = section.strand === 0
+          ? "rgba(23, 185, 143, 0.72)"
+          : "rgba(56, 189, 248, 0.58)";
+        ctx.beginPath();
+        ctx.moveTo(section.a.x, section.a.y);
+        ctx.lineTo(section.b.x, section.b.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Molecular nodes catch light as they rotate toward the viewer.
+      for (const { a, b } of rungs) {
+        for (const [node, color] of [[a, "23, 185, 143"], [b, "56, 189, 248"]] as const) {
+          const depth = (node.z + 1) / 2;
+          const nodeRadius = 1.5 + depth * 3.4;
+          ctx.save();
+          ctx.shadowBlur = 7 + depth * 15;
+          ctx.shadowColor = `rgba(${color}, ${0.35 + depth * 0.5})`;
+          const orb = ctx.createRadialGradient(
+            node.x - nodeRadius * 0.28,
+            node.y - nodeRadius * 0.28,
+            0,
+            node.x,
+            node.y,
+            nodeRadius,
+          );
+          orb.addColorStop(0, `rgba(245, 247, 246, ${0.7 + depth * 0.3})`);
+          orb.addColorStop(0.35, `rgba(${color}, ${0.52 + depth * 0.45})`);
+          orb.addColorStop(1, `rgba(${color}, ${0.08 + depth * 0.22})`);
+          ctx.fillStyle = orb;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, nodeRadius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      if (!reduced) raf = requestAnimationFrame(draw);
     };
-    raf = requestAnimationFrame(draw);
+    if (reduced) draw(0);
+    else raf = requestAnimationFrame(draw);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
